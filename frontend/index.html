@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="kn">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>FarmHealth AI</title>
+  <meta name="description" content="AI-powered crop health monitoring from drone imagery">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans:wght@400;600;700&family=Noto+Sans+Devanagari:wght@400;600;700&family=Noto+Sans+Kannada:wght@400;600;700&family=Noto+Sans+Tamil:wght@400;600;700&family=Noto+Sans+Telugu:wght@400;600;700&family=Noto+Sans+Malayalam:wght@400;600;700&family=Noto+Sans+Bengali:wght@400;600;700&family=Noto+Sans+Gujarati:wght@400;600;700&family=Noto+Sans+Gurmukhi:wght@400;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+  <header class="app-header">
+    <h1>🌾 FarmHealth AI</h1>
+    <p class="tagline">AI-powered crop health monitoring from drone imagery</p>
+  </header>
+
+  <main class="container">
+
+    <!-- Step 1: Language (Kannada by default) -->
+    <section class="card" aria-labelledby="step-lang">
+      <h2 id="step-lang"><span class="step">1</span> ನಿಮ್ಮ ಭಾಷೆ</h2>
+      <p class="current-lang">ಪ್ರಸ್ತುತ ಭಾಷೆ: <strong>ಕನ್ನಡ</strong></p>
+      <label for="lang-select" class="field-label lang-question">ನಿಮಗೆ ಬೇರೆ ಭಾಷೆ ಬೇಕೇ? (Want a different language?)</label>
+      <select id="lang-select" aria-label="ಭಾಷೆ ಆರಿಸಿ / Select language"></select>
+    </section>
+
+    <!-- Step 2: Upload -->
+    <section class="card" aria-labelledby="step-upload">
+      <h2 id="step-upload"><span class="step">2</span> ಡ್ರೋನ್ ಚಿತ್ರವನ್ನು ಅಪ್‌ಲೋಡ್ ಮಾಡಿ</h2>
+      <label for="file-input" class="upload-area">
+        <span class="upload-icon" aria-hidden="true">📷</span>
+        <span class="upload-title">ಫೋಟೋ ಆಯ್ಕೆ ಮಾಡಲು ಇಲ್ಲಿ ಒತ್ತಿ</span>
+        <span class="upload-hint">JPG, JPEG ಅಥವಾ PNG</span>
+      </label>
+      <input type="file" id="file-input" accept=".jpg,.jpeg,.png,image/jpeg,image/png">
+    </section>
+
+    <!-- Step 3: Analyze -->
+    <section class="card" aria-labelledby="step-analyze">
+      <h2 id="step-analyze"><span class="step">3</span> ನಿಮ್ಮ ಹೊಲವನ್ನು ವಿಶ್ಲೇಷಿಸಿ</h2>
+      <button type="button" id="analyze-btn" class="btn btn-primary">🔍 ಹೊಲವನ್ನು ವಿಶ್ಲೇಷಿಸಿ</button>
+
+      <div id="loading" role="status" aria-live="polite" hidden>
+        <div class="spinner" aria-hidden="true"></div>
+        <p class="loading-text">ಹೊಲವನ್ನು ವಿಶ್ಲೇಷಿಸಲಾಗುತ್ತಿದೆ... ವರದಿ ತಯಾರಾಗುತ್ತಿದೆ...</p>
+      </div>
+    </section>
+
+    <!-- Results -->
+    <section class="card" aria-labelledby="results-map">
+      <h2 id="results-map">🗺️ ಬೆಳೆ ಆರೋಗ್ಯ ನಕ್ಷೆ</h2>
+      <img id="overlay-img" alt="ನಿಮ್ಮ ಹೊಲದ ಬಣ್ಣದ ಬೆಳೆ ಆರೋಗ್ಯ ನಕ್ಷೆ">
+      <p class="placeholder-note" id="map-placeholder">ವಿಶ್ಲೇಷಣೆಯ ನಂತರ ನಿಮ್ಮ ನಕ್ಷೆ ಇಲ್ಲಿ ಕಾಣಿಸುತ್ತದೆ.</p>
+
+      <div id="legend" aria-label="ನಕ್ಷೆಯ ಬಣ್ಣದ ಸೂಚಿ">
+        <div class="legend-item"><span class="swatch swatch-green" aria-hidden="true"></span><span>ಹಸಿರು – ಆರೋಗ್ಯಕರ ಬೆಳೆ</span></div>
+        <div class="legend-item"><span class="swatch swatch-yellow" aria-hidden="true"></span><span>ಹಳದಿ – ಸ್ವಲ್ಪ ಒತ್ತಡ</span></div>
+        <div class="legend-item"><span class="swatch swatch-red" aria-hidden="true"></span><span>ಕೆಂಪು – ತೀವ್ರ ಒತ್ತಡ, ಗಮನ ಬೇಕು</span></div>
+        <div class="legend-item"><span class="swatch swatch-grey" aria-hidden="true"></span><span>ಬೂದು – ಗುರುತಿಸದ ಪ್ರದೇಶ</span></div>
+      </div>
+    </section>
+
+    <section class="card" aria-labelledby="results-chart">
+      <h2 id="results-chart">📊 ಹೊಲದ ಅಂಕಿಅಂಶಗಳು</h2>
+      <div class="chart-wrap">
+        <canvas id="stats-chart" role="img" aria-label="ಆರೋಗ್ಯಕರ, ಸ್ವಲ್ಪ ಒತ್ತಡ, ತೀವ್ರ ಒತ್ತಡ ಮತ್ತು ಗುರುತಿಸದ ಪ್ರದೇಶಗಳ ಪಾಲನ್ನು ತೋರಿಸುವ ಚಾರ್ಟ್"></canvas>
+      </div>
+    </section>
+
+    <section class="card" aria-labelledby="results-summary">
+      <h2 id="results-summary">📝 ಸಾರಾಂಶ</h2>
+      <div id="summary-text" aria-live="polite">ನಿಮ್ಮ ಹೊಲದ ಸಾರಾಂಶ ಇಲ್ಲಿ ಕಾಣಿಸುತ್ತದೆ.</div>
+
+      <h3 class="audio-heading">🔊 ವರದಿಯನ್ನು ಕೇಳಿ</h3>
+      <audio id="audio-player" controls></audio>
+
+      <div class="btn-row">
+        <button type="button" id="read-btn" class="btn btn-secondary">▶ ಸಾರಾಂಶ ಓದಿ</button>
+        <button type="button" id="stop-btn" class="btn btn-outline">■ ಧ್ವನಿ ನಿಲ್ಲಿಸಿ</button>
+      </div>
+    </section>
+
+  </main>
+
+  <footer class="app-footer">
+    <p>FarmHealth AI 🌱</p>
+  </footer>
+
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>
