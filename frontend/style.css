@@ -235,3 +235,6 @@ body {
 /* Language prompt */
 .current-lang { margin: 0 0 12px; font-size: 1.15rem; }
 .lang-question { font-size: 1.1rem; }
+/* Bilingual tagline */
+.tagline-kn { font-size: 1.15rem; font-weight: 600; margin-bottom: 4px; }
+.tagline-en { font-size: 1rem; opacity: 0.9; }
