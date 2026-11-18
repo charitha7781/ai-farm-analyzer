@@ -200,11 +200,12 @@ body {
   border-radius: 6px;
   border: 2px solid #333;
 }
-.swatch-green { background: #43a047; }
-.swatch-yellow { background: var(--yellow); }
-.swatch-red { background: var(--red); }
-.swatch-grey { background: var(--grey); }
-
+.swatch-c0 { background: #00c800; }
+.swatch-c1 { background: #64f096; }
+.swatch-c2 { background: #ffdc00; }
+.swatch-c3 { background: #ff8c00; }
+.swatch-c4 { background: #e60000; }
+.swatch-c5 { background: #808080; }
 /* Chart */
 .chart-wrap { position: relative; width: 100%; max-width: 360px; margin: 0 auto; }
 #stats-chart { max-width: 100%; }
