@@ -1,0 +1,75 @@
+/* Corner-panel layout. Uses the colour variables from style.css.
+   Phone: field analysis first, then the four panels stacked.
+   Wide screen: panels in the four corners around the field analysis. */
+.layout {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  padding: 0 16px 16px;
+  max-width: 1400px;
+  margin: 0 auto;
+}
+.layout > .container { order: 1; padding: 16px 0; width: 100%; }
+#panel-discoveries { order: 2; }
+#panel-facts { order: 3; }
+#panel-prices { order: 4; }
+#panel-chat { order: 5; }
+
+@media (min-width: 1100px) {
+  .layout {
+    display: grid;
+    grid-template-columns: 300px minmax(0, 1fr) 320px;
+    grid-template-rows: auto 1fr;
+    align-items: start;
+    padding-top: 16px;
+  }
+  .layout > .container { grid-column: 2; grid-row: 1 / span 2; order: 0; padding: 0; margin: 0 auto; }
+  #panel-discoveries { grid-column: 1; grid-row: 1; order: 0; }
+  #panel-prices { grid-column: 3; grid-row: 1; order: 0; }
+  #panel-facts { grid-column: 1; grid-row: 2; order: 0; align-self: end; }
+  #panel-chat { grid-column: 3; grid-row: 2; order: 0; align-self: end; }
+}
+
+.panel h2 { font-size: 1.1rem; }
+
+.item { padding: 10px 0; border-top: 1px solid var(--border); font-size: 1rem; line-height: 1.6; }
+.item:first-child { border-top: 0; padding-top: 0; }
+.item a { font-size: 0.9rem; color: var(--green-700); font-weight: 600; }
+.note { font-size: 0.9rem; color: var(--muted); margin: 4px 0; }
+
+.price-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 0;
+  border-top: 1px solid var(--border);
+}
+.price-row:first-child { border-top: 0; }
+.price-row .crop { font-weight: 700; font-size: 1.05rem; }
+.price-row .range { font-size: 0.9rem; color: var(--muted); }
+.price-row .modal { font-weight: 700; color: var(--green-900); text-align: right; }
+
+.chat-log {
+  height: 200px;
+  overflow-y: auto;
+  background: var(--green-50);
+  border: 2px solid var(--border);
+  border-radius: 12px;
+  padding: 8px;
+}
+.msg { margin: 0 0 8px; padding: 8px 12px; border-radius: 12px; max-width: 90%; overflow-wrap: anywhere; }
+.msg.user { background: var(--green-700); color: #fff; margin-left: auto; }
+.msg.bot { background: #fff; border: 1px solid var(--border); }
+.chat-form { display: flex; gap: 8px; margin-top: 10px; }
+.chat-form input {
+  flex: 1;
+  min-width: 0;
+  min-height: 48px;
+  padding: 8px 12px;
+  font-family: inherit;
+  font-size: 1rem;
+  border: 2px solid var(--green-700);
+  border-radius: 12px;
+}
+.chat-form .btn { width: auto; min-height: 48px; padding: 8px 18px; font-size: 1rem; }

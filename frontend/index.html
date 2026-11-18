@@ -9,90 +9,130 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Noto+Sans:wght@400;600;700&family=Noto+Sans+Devanagari:wght@400;600;700&family=Noto+Sans+Kannada:wght@400;600;700&family=Noto+Sans+Tamil:wght@400;600;700&family=Noto+Sans+Telugu:wght@400;600;700&family=Noto+Sans+Malayalam:wght@400;600;700&family=Noto+Sans+Bengali:wght@400;600;700&family=Noto+Sans+Gujarati:wght@400;600;700&family=Noto+Sans+Gurmukhi:wght@400;600;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="style.css">
+  <link rel="stylesheet" href="panels.css">
 </head>
 <body>
 
-    <header class="app-header">
+  <header class="app-header">
     <h1>🌾 FarmHealth AI</h1>
-    <p class="tagline tagline-kn">ಡ್ರೋನ್ ಚಿತ್ರಗಳಿಂದ AI ಆಧಾರಿತ ಬೆಳೆ ಆರೋಗ್ಯ ಮೇಲ್ವಿಚಾರಣೆ</p>
+    <p class="tagline tagline-local" id="tagline-local" data-i18n="tagline"></p>
     <p class="tagline tagline-en">AI-powered crop health monitoring from drone imagery</p>
   </header>
 
-  <main class="container">
+  <div class="layout">
 
-    <!-- Step 1: Language (Kannada by default) -->
-    <section class="card" aria-labelledby="step-lang">
-      <h2 id="step-lang"><span class="step">1</span> ನಿಮ್ಮ ಭಾಷೆ</h2>
-      <p class="current-lang">ಪ್ರಸ್ತುತ ಭಾಷೆ: <strong>ಕನ್ನಡ</strong></p>
-      <label for="lang-select" class="field-label lang-question">ನಿಮಗೆ ಬೇರೆ ಭಾಷೆ ಬೇಕೇ? (Want a different language?)</label>
-      <select id="lang-select" aria-label="ಭಾಷೆ ಆರಿಸಿ / Select language"></select>
-    </section>
+    <!-- Top-left corner -->
+    <aside class="card panel" id="panel-discoveries" aria-labelledby="disc-title">
+      <h2 id="disc-title" data-i18n="disc_title"></h2>
+      <div id="discoveries-list"></div>
+    </aside>
 
-    <!-- Step 2: Upload -->
-    <section class="card" aria-labelledby="step-upload">
-      <h2 id="step-upload"><span class="step">2</span> ಡ್ರೋನ್ ಚಿತ್ರವನ್ನು ಅಪ್‌ಲೋಡ್ ಮಾಡಿ</h2>
-      <label for="file-input" class="upload-area">
-        <span class="upload-icon" aria-hidden="true">📷</span>
-        <span class="upload-title">ಫೋಟೋ ಆಯ್ಕೆ ಮಾಡಲು ಇಲ್ಲಿ ಒತ್ತಿ</span>
-        <span class="upload-hint">JPG, JPEG ಅಥವಾ PNG</span>
-      </label>
-      <input type="file" id="file-input" accept=".jpg,.jpeg,.png,image/jpeg,image/png">
-    </section>
+    <!-- Centre: your existing field analysis (unchanged) -->
+    <main class="container">
 
-    <!-- Step 3: Analyze -->
-    <section class="card" aria-labelledby="step-analyze">
-      <h2 id="step-analyze"><span class="step">3</span> ನಿಮ್ಮ ಹೊಲವನ್ನು ವಿಶ್ಲೇಷಿಸಿ</h2>
-      <button type="button" id="analyze-btn" class="btn btn-primary">🔍 ಹೊಲವನ್ನು ವಿಶ್ಲೇಷಿಸಿ</button>
+      <!-- Step 1: Language -->
+      <section class="card" aria-labelledby="step-lang">
+        <h2 id="step-lang"><span class="step">1</span> <span data-i18n="step_lang"></span></h2>
+        <p class="current-lang"><span data-i18n="current"></span> <strong id="current-lang-name"></strong></p>
+        <label for="lang-select" class="field-label lang-question" data-i18n="q_lang"></label>
+        <select id="lang-select" aria-label="Select language"></select>
+      </section>
 
-      <div id="loading" role="status" aria-live="polite" hidden>
-        <div class="spinner" aria-hidden="true"></div>
-        <p class="loading-text">ಹೊಲವನ್ನು ವಿಶ್ಲೇಷಿಸಲಾಗುತ್ತಿದೆ... ವರದಿ ತಯಾರಾಗುತ್ತಿದೆ...</p>
-      </div>
-    </section>
+      <!-- Step 2: Upload -->
+      <section class="card" aria-labelledby="step-upload">
+        <h2 id="step-upload"><span class="step">2</span> <span data-i18n="step_upload"></span></h2>
+        <label for="file-input" class="upload-area">
+          <span class="upload-icon" aria-hidden="true">📷</span>
+          <span class="upload-title"></span>
+          <span class="upload-hint" data-i18n="hint"></span>
+        </label>
+        <input type="file" id="file-input" accept=".jpg,.jpeg,.png,image/jpeg,image/png">
+      </section>
 
-    <!-- Results -->
-    <section class="card" aria-labelledby="results-map">
-      <h2 id="results-map">🗺️ ಬೆಳೆ ಆರೋಗ್ಯ ನಕ್ಷೆ</h2>
-      <img id="overlay-img" alt="ನಿಮ್ಮ ಹೊಲದ ಬಣ್ಣದ ಬೆಳೆ ಆರೋಗ್ಯ ನಕ್ಷೆ">
-      <p class="placeholder-note" id="map-placeholder">ವಿಶ್ಲೇಷಣೆಯ ನಂತರ ನಿಮ್ಮ ನಕ್ಷೆ ಇಲ್ಲಿ ಕಾಣಿಸುತ್ತದೆ.</p>
+      <!-- Step 3: Analyze -->
+      <section class="card" aria-labelledby="step-analyze">
+        <h2 id="step-analyze"><span class="step">3</span> <span data-i18n="step_analyze"></span></h2>
+        <button type="button" id="analyze-btn" class="btn btn-primary" data-i18n="btn_analyze"></button>
 
-            <div id="legend" aria-label="ನಕ್ಷೆಯ ಬಣ್ಣದ ಸೂಚಿ">
-        <div class="legend-item"><span class="swatch swatch-c0" aria-hidden="true"></span><span>ಹಸಿರು – ಆರೋಗ್ಯಕರ ಬೆಳೆ</span></div>
-        <div class="legend-item"><span class="swatch swatch-c1" aria-hidden="true"></span><span>ತಿಳಿ ಹಸಿರು – ಸ್ವಲ್ಪ ಆರೋಗ್ಯಕರ</span></div>
-        <div class="legend-item"><span class="swatch swatch-c2" aria-hidden="true"></span><span>ಹಳದಿ – ಮಧ್ಯಮ ಒತ್ತಡ</span></div>
-        <div class="legend-item"><span class="swatch swatch-c3" aria-hidden="true"></span><span>ಕಿತ್ತಳೆ – ಹೆಚ್ಚು ಒತ್ತಡ</span></div>
-        <div class="legend-item"><span class="swatch swatch-c4" aria-hidden="true"></span><span>ಕೆಂಪು – ತೀವ್ರ ಒತ್ತಡ, ಗಮನ ಬೇಕು</span></div>
-        <div class="legend-item"><span class="swatch swatch-c5" aria-hidden="true"></span><span>ಬೂದು – ಬೆಳೆ ಇಲ್ಲದ ಪ್ರದೇಶ</span></div>
-      </div>
-    </section>
+        <div id="loading" role="status" aria-live="polite" hidden>
+          <div class="spinner" aria-hidden="true"></div>
+          <p class="loading-text" data-i18n="loading"></p>
+        </div>
+      </section>
 
-    <section class="card" aria-labelledby="results-chart">
-      <h2 id="results-chart">📊 ಹೊಲದ ಅಂಕಿಅಂಶಗಳು</h2>
-      <div class="chart-wrap">
-        <canvas id="stats-chart" role="img" aria-label="ಆರೋಗ್ಯಕರ, ಸ್ವಲ್ಪ ಒತ್ತಡ, ತೀವ್ರ ಒತ್ತಡ ಮತ್ತು ಗುರುತಿಸದ ಪ್ರದೇಶಗಳ ಪಾಲನ್ನು ತೋರಿಸುವ ಚಾರ್ಟ್"></canvas>
-      </div>
-    </section>
+      <!-- Results -->
+      <section class="card" aria-labelledby="results-map">
+        <h2 id="results-map" data-i18n="map_title"></h2>
+        <img id="overlay-img" data-i18n-alt="map_alt" alt="">
+        <p class="placeholder-note" id="map-placeholder" data-i18n="map_ph"></p>
 
-    <section class="card" aria-labelledby="results-summary">
-      <h2 id="results-summary">📝 ಸಾರಾಂಶ</h2>
-      <div id="summary-text" aria-live="polite">ನಿಮ್ಮ ಹೊಲದ ಸಾರಾಂಶ ಇಲ್ಲಿ ಕಾಣಿಸುತ್ತದೆ.</div>
+        <div id="legend" data-i18n-aria="legend_aria">
+          <div class="legend-item"><span class="swatch swatch-c0" aria-hidden="true"></span><span data-i18n="l0"></span></div>
+          <div class="legend-item"><span class="swatch swatch-c1" aria-hidden="true"></span><span data-i18n="l1"></span></div>
+          <div class="legend-item"><span class="swatch swatch-c2" aria-hidden="true"></span><span data-i18n="l2"></span></div>
+          <div class="legend-item"><span class="swatch swatch-c3" aria-hidden="true"></span><span data-i18n="l3"></span></div>
+          <div class="legend-item"><span class="swatch swatch-c4" aria-hidden="true"></span><span data-i18n="l4"></span></div>
+          <div class="legend-item"><span class="swatch swatch-c5" aria-hidden="true"></span><span data-i18n="l5"></span></div>
+        </div>
+      </section>
 
-      <h3 class="audio-heading">🔊 ವರದಿಯನ್ನು ಕೇಳಿ</h3>
-      <audio id="audio-player" controls></audio>
+      <section class="card" aria-labelledby="results-chart">
+        <h2 id="results-chart" data-i18n="stats_title"></h2>
+        <div class="chart-wrap">
+          <canvas id="stats-chart" role="img" data-i18n-aria="chart_aria"></canvas>
+        </div>
+      </section>
 
-      <div class="btn-row">
-        <button type="button" id="read-btn" class="btn btn-secondary">▶ ಸಾರಾಂಶ ಓದಿ</button>
-        <button type="button" id="stop-btn" class="btn btn-outline">■ ಧ್ವನಿ ನಿಲ್ಲಿಸಿ</button>
-      </div>
-    </section>
+      <section class="card" aria-labelledby="results-summary">
+        <h2 id="results-summary" data-i18n="sum_title"></h2>
+        <div id="summary-text" aria-live="polite"></div>
 
-  </main>
+        <h3 class="audio-heading" data-i18n="listen"></h3>
+        <audio id="audio-player" controls></audio>
+
+        <div class="btn-row">
+          <button type="button" id="read-btn" class="btn btn-secondary" data-i18n="read"></button>
+          <button type="button" id="stop-btn" class="btn btn-outline" data-i18n="stop"></button>
+        </div>
+      </section>
+
+    </main>
+
+    <!-- Top-right corner -->
+    <aside class="card panel" id="panel-prices" aria-labelledby="price-title">
+      <h2 id="price-title" data-i18n="price_title"></h2>
+      <p id="price-status" class="note"></p>
+      <div id="price-list"></div>
+      <p id="price-unit" class="note"></p>
+    </aside>
+
+    <!-- Bottom-left corner -->
+    <aside class="card panel" id="panel-facts" aria-labelledby="facts-title">
+      <h2 id="facts-title" data-i18n="facts_title"></h2>
+      <div id="facts-list"></div>
+    </aside>
+
+    <!-- Bottom-right corner -->
+    <aside class="card panel" id="panel-chat" aria-labelledby="chat-title">
+      <h2 id="chat-title" data-i18n="chat_title"></h2>
+      <div id="chat-log" class="chat-log" aria-live="polite"></div>
+      <form id="chat-form" class="chat-form">
+        <input type="text" id="chat-input" autocomplete="off">
+        <button type="submit" class="btn btn-primary" data-i18n="chat_send"></button>
+      </form>
+    </aside>
+
+  </div>
 
   <footer class="app-footer">
     <p>FarmHealth AI 🌱</p>
   </footer>
 
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <script src="i18n.js"></script>
+  <script src="panels-i18n.js"></script>
+  <script src="config.js"></script>
   <script src="app.js"></script>
+  <script src="panels.js"></script>
 </body>
 </html>

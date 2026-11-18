@@ -1,7 +1,7 @@
 // ================== SETTINGS ==================
-const USE_MOCK = true;                          // true = fake result (no backend needed)
+const USE_MOCK = true;                           // true = fake result (no backend needed)
 const API_URL = "http://localhost:8000/analyze"; // change when the backend is ready
-const DEFAULT_LANG = "kn";                      // Kannada first
+const DEFAULT_LANG = "kn";
 
 const LANGUAGES = [
   { code: "kn", name: "ಕನ್ನಡ (Kannada)",   speech: "kn-IN" },
@@ -17,17 +17,7 @@ const LANGUAGES = [
 ];
 
 // Same order and colours as the map legend (classes 0 to 5)
-const CHART_LABELS = [
-  "ಆರೋಗ್ಯಕರ", "ಸ್ವಲ್ಪ ಆರೋಗ್ಯಕರ", "ಮಧ್ಯಮ ಒತ್ತಡ",
-  "ಹೆಚ್ಚು ಒತ್ತಡ", "ತೀವ್ರ ಒತ್ತಡ", "ಬೆಳೆ ಇಲ್ಲದ ಪ್ರದೇಶ"
-];
 const CHART_COLORS = ["#00c800", "#64f096", "#ffdc00", "#ff8c00", "#e60000", "#808080"];
-
-const MSG = {
-  noFile: "ದಯವಿಟ್ಟು ಮೊದಲು ಡ್ರೋನ್ ಫೋಟೋ ಆಯ್ಕೆ ಮಾಡಿ.",
-  badType: "JPG ಅಥವಾ PNG ಚಿತ್ರವನ್ನು ಮಾತ್ರ ಆಯ್ಕೆ ಮಾಡಿ.",
-  error: "ಕ್ಷಮಿಸಿ, ವಿಶ್ಲೇಷಣೆ ವಿಫಲವಾಯಿತು. ದಯವಿಟ್ಟು ಮತ್ತೆ ಪ್ರಯತ್ನಿಸಿ."
-};
 
 // ================== ELEMENTS ==================
 const fileInput   = document.getElementById("file-input");
@@ -41,8 +31,47 @@ const statsCanvas = document.getElementById("stats-chart");
 const readBtn     = document.getElementById("read-btn");
 const stopBtn     = document.getElementById("stop-btn");
 const uploadTitle = document.querySelector(".upload-title");
+const taglineLocal = document.getElementById("tagline-local");
+const currentLangName = document.getElementById("current-lang-name");
 
 let chartInstance = null;
+let lastFile = null;
+let lastStats = null;
+let hasResult = false;
+
+// ================== TRANSLATION ==================
+function t(key) {
+  const dict = I18N[langSelect.value] || {};
+  return dict[key] !== undefined ? dict[key] : I18N.en[key];
+}
+
+function applyLanguage() {
+  const code = langSelect.value;
+  document.documentElement.lang = code;
+
+  document.querySelectorAll("[data-i18n]").forEach(function (el) {
+    el.textContent = t(el.dataset.i18n);
+  });
+  document.querySelectorAll("[data-i18n-alt]").forEach(function (el) {
+    el.alt = t(el.dataset.i18nAlt);
+  });
+  document.querySelectorAll("[data-i18n-aria]").forEach(function (el) {
+    el.setAttribute("aria-label", t(el.dataset.i18nAria));
+  });
+
+  const lang = LANGUAGES.find(function (l) { return l.code === code; });
+  currentLangName.textContent = lang ? lang.name : code;
+  taglineLocal.hidden = (code === "en");   // English tagline is always shown below it
+
+  if (!lastFile) { uploadTitle.textContent = t("pick"); }
+  if (!hasResult) { summaryText.textContent = t("sum_ph"); }
+  if (lastStats) { drawChart(lastStats); }
+}
+
+function currentSpeechLang() {
+  const lang = LANGUAGES.find(function (l) { return l.code === langSelect.value; });
+  return lang ? lang.speech : "kn-IN";
+}
 
 // ================== LANGUAGE DROPDOWN ==================
 LANGUAGES.forEach(function (lang) {
@@ -52,45 +81,55 @@ LANGUAGES.forEach(function (lang) {
   langSelect.appendChild(opt);
 });
 langSelect.value = DEFAULT_LANG;
+applyLanguage();
 
-function currentSpeechLang() {
-  const found = LANGUAGES.find(function (l) { return l.code === langSelect.value; });
-  return found ? found.speech : "kn-IN";
-}
+langSelect.addEventListener("change", function () {
+  if ("speechSynthesis" in window) { window.speechSynthesis.cancel(); }
+  applyLanguage();
+  // If a result is already showing, ask again so the summary and audio match the new language
+  if (hasResult && lastFile) { runAnalysis(); }
+});
 
 // ================== FILE CHOICE ==================
 fileInput.addEventListener("change", function () {
   const file = fileInput.files[0];
-  if (file) { uploadTitle.textContent = "✔ " + file.name; }
+  if (file) {
+    lastFile = file;
+    uploadTitle.textContent = "✔ " + file.name;
+  }
 });
 
 // ================== ANALYZE ==================
-analyzeBtn.addEventListener("click", async function () {
+analyzeBtn.addEventListener("click", function () {
   const file = fileInput.files[0];
-  if (!file) { alert(MSG.noFile); return; }
-  if (!/^image\/(jpeg|png)$/.test(file.type)) { alert(MSG.badType); return; }
+  if (!file) { alert(t("no_file")); return; }
+  if (!/^image\/(jpeg|png)$/.test(file.type)) { alert(t("bad_type")); return; }
+  lastFile = file;
+  runAnalysis();
+});
 
+async function runAnalysis() {
   setLoading(true);
   try {
-    const result = USE_MOCK ? await mockAnalyze(file) : await realAnalyze(file);
+    const result = USE_MOCK ? await mockAnalyze(lastFile) : await realAnalyze(lastFile);
     showResult(result);
   } catch (err) {
     console.error(err);
-    summaryText.textContent = MSG.error;
+    summaryText.textContent = t("error");
   } finally {
     setLoading(false);
   }
-});
+}
 
 function setLoading(on) {
   loadingEl.hidden = !on;
   analyzeBtn.disabled = on;
 }
 
-// Real backend call.
+// Real backend call. Sends the image and the chosen language code.
 // Expected JSON back:
 // { "overlay_image": "<url or data:image/png;base64,...>",
-//   "stats": [p0, p1, p2, p3, p4, p5],      // numbers for classes 0..5
+//   "stats": [p0, p1, p2, p3, p4, p5],       // numbers for classes 0..5
 //   "summary": "text in the chosen language",
 //   "audio_url": "<url to mp3, optional>" }
 async function realAnalyze(file) {
@@ -108,17 +147,14 @@ async function mockAnalyze(file) {
   return {
     overlay_image: URL.createObjectURL(file),
     stats: [40, 20, 15, 10, 5, 10],
-    summary:
-      "ನಿಮ್ಮ ಹೊಲದ ಸುಮಾರು 60% ಬೆಳೆ ಆರೋಗ್ಯವಾಗಿದೆ.\n" +
-      "15% ಭಾಗದಲ್ಲಿ ಮಧ್ಯಮ ಒತ್ತಡ ಇದೆ.\n" +
-      "15% ಭಾಗದಲ್ಲಿ ಹೆಚ್ಚು ಅಥವಾ ತೀವ್ರ ಒತ್ತಡ ಇದೆ — ಕೆಂಪು ಮತ್ತು ಕಿತ್ತಳೆ ಭಾಗಗಳನ್ನು ಮೊದಲು ಪರಿಶೀಲಿಸಿ.\n" +
-      "(ಇದು ಪರೀಕ್ಷಾ ಮಾದರಿ ಫಲಿತಾಂಶ)",
+    summary: t("mock"),
     audio_url: ""
   };
 }
 
 // ================== SHOW RESULT ==================
 function showResult(data) {
+  hasResult = true;
   overlayImg.src = data.overlay_image;
   summaryText.textContent = data.summary || "";
 
@@ -128,7 +164,16 @@ function showResult(data) {
     audioPlayer.removeAttribute("src");
   }
 
-  drawChart(data.stats);
+  lastStats = data.stats;
+  drawChart(lastStats);
+}
+
+// Chart labels come from the legend text (the part after " – ")
+function chartLabels() {
+  return [0, 1, 2, 3, 4, 5].map(function (i) {
+    const parts = t("l" + i).split(" – ");
+    return parts[parts.length - 1];
+  });
 }
 
 function drawChart(stats) {
@@ -141,13 +186,11 @@ function drawChart(stats) {
   chartInstance = new Chart(statsCanvas, {
     type: "doughnut",
     data: {
-      labels: CHART_LABELS,
+      labels: chartLabels(),
       datasets: [{ data: counts, backgroundColor: CHART_COLORS, borderColor: "#ffffff", borderWidth: 2 }]
     },
     options: {
-      plugins: {
-        legend: { position: "bottom", labels: { font: { size: 14 } } }
-      }
+      plugins: { legend: { position: "bottom", labels: { font: { size: 14 } } } }
     }
   });
 }
